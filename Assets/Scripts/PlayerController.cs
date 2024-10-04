@@ -8,13 +8,19 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private int _playerSpeed;
     [SerializeField] private Animator _playerAnimator;
     [SerializeField] private SpriteRenderer _playerSprite;
+    [SerializeField] private LayerMask _grassLayer;
+    [SerializeField] private int _stepsInGrass;
     
     
     private Rigidbody _playerRigidbody;
     private Vector3 _movement;
     private PlayerControls _playerControls;
+    private bool _movingInGrass;
+    private float _stepTimer;
+    
     
     private const string IS_WALK_PARAM = "IsWalking";
+    private const float _timePerStep = 0.5f;
 
     private void Awake()
     {
@@ -46,5 +52,23 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         _playerRigidbody.MovePosition(transform.position + _movement * (_playerSpeed * Time.fixedDeltaTime));
+
+        
+        // Checks if we are moving and colliding with grass
+        
+        Collider[] colliders = Physics.OverlapSphere(transform.position, 1, _grassLayer);
+        _movingInGrass = colliders.Length != 0 && _movement != Vector3.zero;
+
+        if (!_movingInGrass) return;
+        
+        _stepTimer += Time.fixedDeltaTime;
+        
+        // Increases the steps in grass so we can transition to battle scene once the threshold steps have been hit
+        if (_stepTimer > _timePerStep)
+        {
+            _stepsInGrass++;
+            _stepTimer = 0;
+        }
+
     }
 }
