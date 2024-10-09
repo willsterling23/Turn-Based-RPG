@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,6 +12,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private SpriteRenderer _playerSprite;
     [SerializeField] private LayerMask _grassLayer;
     [SerializeField] private int _stepsInGrass;
+    [SerializeField] private int _minStepsToEncounter;
+    [SerializeField] private int _maxStepsToEncounter;
     
     
     private Rigidbody _playerRigidbody;
@@ -17,14 +21,16 @@ public class PlayerController : MonoBehaviour
     private PlayerControls _playerControls;
     private bool _movingInGrass;
     private float _stepTimer;
+    private int _stepsToEncounter;
     
     
     private const string IS_WALK_PARAM = "IsWalking";
-    private const float _timePerStep = 0.5f;
+    private const float TIME_PER_STEP = 0.5f;
 
     private void Awake()
     {
         _playerControls = new PlayerControls();
+        _stepsToEncounter = Random.Range(_minStepsToEncounter, _maxStepsToEncounter);
     }
 
     private void OnEnable()
@@ -52,23 +58,33 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         _playerRigidbody.MovePosition(transform.position + _movement * (_playerSpeed * Time.fixedDeltaTime));
-
         
-        // Checks if we are moving and colliding with grass
-        
-        Collider[] colliders = Physics.OverlapSphere(transform.position, 1, _grassLayer);
-        _movingInGrass = colliders.Length != 0 && _movement != Vector3.zero;
-
+        GetPlayerGrassPosition();
         if (!_movingInGrass) return;
         
+        CalculateStepsToBattleScene();
+    }
+
+    private void CalculateStepsToBattleScene()
+    {
         _stepTimer += Time.fixedDeltaTime;
-        
-        // Increases the steps in grass so we can transition to battle scene once the threshold steps have been hit
-        if (_stepTimer > _timePerStep)
+        if (_stepTimer > TIME_PER_STEP)
         {
             _stepsInGrass++;
             _stepTimer = 0;
-        }
 
+            if (_stepsInGrass >= _stepsToEncounter)
+            {
+                SceneManager.LoadScene("BattleScene");
+            }
+        }
     }
+
+    private void GetPlayerGrassPosition()
+    {
+        var colliders = Physics.OverlapSphere(transform.position, 1, _grassLayer);
+        _movingInGrass = colliders.Length != 0 && _movement != Vector3.zero;
+    }
+
+    
 }
