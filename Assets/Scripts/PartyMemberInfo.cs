@@ -13,5 +13,12 @@ public class PartyMemberInfo : ScriptableObject
     [SerializeField] private GameObject _memberBattleVisualPrefab; 
     [SerializeField] private GameObject _memberOverworldVisualPrefab; 
     
+    public string MemberName => _memberName;
+    public int StartingLevel => _startingLevel;
+    public int BaseHealth => _baseHealth;
+    public int BaseStrength => _baseStrength;
+    public int BaseInitiative => _baseInitiative;
+    public GameObject MemberBattleVisualPrefab => _memberBattleVisualPrefab;
+    public GameObject MemberOverworldVisualPrefab => _memberOverworldVisualPrefab;
     
 }
